@@ -28,9 +28,11 @@ async function getToken(shop) {
   return cached.token;
 }
 
-const MUTATION = `mutation($order: OrderCreateOrderInput!) {
-  orderCreate(order: $order) {
-    order { id name }
+// Se crea un BORRADOR de pedido: no cuenta como venta ni como dinero cobrado hasta que
+// el dueño lo marque como pagado en Shopify (Pedidos → Borradores → Marcar como pagado).
+const MUTATION = `mutation($input: DraftOrderInput!) {
+  draftOrderCreate(input: $input) {
+    draftOrder { id name }
     userErrors { field message }
   }
 }`;
@@ -66,13 +68,11 @@ exports.handler = async (event) => {
   ].filter(Boolean).join("\n");
 
   const order = {
-    currency: "PEN",
-    sourceIdentifier: clean(d.id, 60),
+    presentmentCurrencyCode: "PEN",
     email: clean(d.email, 120) || undefined,
     phone,
     note,
     tags: ["tienda-web", "pago-por-verificar", d.method === "yape" ? "yape-plin" : "transferencia"],
-    financialStatus: "PENDING",
     shippingAddress: shipping,
     billingAddress: shipping,
     customAttributes: [
@@ -85,7 +85,7 @@ exports.handler = async (event) => {
       title: clean(l.title, 200) || "Producto",
       quantity: Math.max(1, Math.min(500, parseInt(l.qty, 10) || 1)),
       requiresShipping: true,
-      priceSet: { shopMoney: { amount: Math.max(0, Number(l.unit) || 0).toFixed(2), currencyCode: "PEN" } }
+      originalUnitPriceWithCurrency: { amount: Math.max(0, Number(l.unit) || 0).toFixed(2), currencyCode: "PEN" }
     }))
   };
 
@@ -94,15 +94,15 @@ exports.handler = async (event) => {
     const r = await fetch(`https://${shop}.myshopify.com/admin/api/${API_VERSION}/graphql.json`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": token },
-      body: JSON.stringify({ query: MUTATION, variables: { order } })
+      body: JSON.stringify({ query: MUTATION, variables: { input: order } })
     });
     const j = await r.json();
-    const out = j.data && j.data.orderCreate;
+    const out = j.data && j.data.draftOrderCreate;
     if (!r.ok || j.errors || !out || (out.userErrors && out.userErrors.length)) {
       console.error("Shopify:", JSON.stringify(j.errors || (out && out.userErrors) || j));
-      return res(502, { error: "no se pudo crear el pedido" });
+      return res(502, { error: "no se pudo crear el borrador" });
     }
-    return res(200, { ok: true, order: out.order.name });
+    return res(200, { ok: true, order: out.draftOrder.name });
   } catch (e) {
     console.error(e.message);
     return res(502, { error: "error al conectar con Shopify" });
