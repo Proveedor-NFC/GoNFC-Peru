@@ -17,8 +17,13 @@ async function getToken(shop) {
       client_secret: process.env.SHOPIFY_CLIENT_SECRET
     })
   });
-  const j = await r.json();
-  if (!r.ok || !j.access_token) throw new Error("token: " + (j.error_description || j.error || r.status));
+  const txt = await r.text();
+  let j = {};
+  try { j = JSON.parse(txt); } catch (e) { /* Shopify devolvió una página, no JSON */ }
+  if (!r.ok || !j.access_token) {
+    console.error("Token Shopify → estado " + r.status + " · tienda " + shop + " · url final " + r.url + " · respuesta: " + txt.replace(/\s+/g, " ").slice(0, 300));
+    throw new Error("token: " + (j.error_description || j.error || ("estado " + r.status)));
+  }
   cached = { token: j.access_token, exp: Date.now() + (j.expires_in - 300) * 1000 };
   return cached.token;
 }
