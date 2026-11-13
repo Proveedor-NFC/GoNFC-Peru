@@ -3925,6 +3925,36 @@ document.addEventListener("click", e => {
   clearTimeout(t._sec); t._sec = setTimeout(() => t.classList.remove("sec-in"), 900);
 });
 </script>
+<script>
+/* Conteo de clics (GoatCounter → pestaña "Events"/eventos). No guarda datos personales. */
+(function(){
+  function track(name, title){
+    try{
+      if(window.goatcounter && window.goatcounter.count){
+        window.goatcounter.count({path:name, title:title||name, event:true});
+      }
+    }catch(_){}
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var el, card, prod;
+    if((el = t.closest("a[href*='wa.me']"))){
+      track("click-whatsapp", el.classList.contains("wa-float") ? "WhatsApp (botón flotante)" : "WhatsApp");
+      return;
+    }
+    if((el = t.closest("[data-open]"))){
+      card = el.closest(".product");
+      var h = card && card.querySelector("h3");
+      prod = h ? h.textContent.trim() : "producto";
+      var buy = el.getAttribute("data-mode") === "buy";
+      track((buy ? "click-comprar: " : "click-detalles: ") + prod, prod);
+      return;
+    }
+    if(t.closest("#cartFab")) { track("click-carrito", "Abrir carrito"); return; }
+    if(t.closest("#ordFab")) { track("click-mis-pedidos", "Mis pedidos"); return; }
+  }, true);
+})();
+</script>
 <script data-goatcounter="https://gonfc-peru.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
