@@ -1,0 +1,15 @@
+NOMBRE DEL CANAL: CineToon
+IDENTIFICADOR (handle): @CineToonResumenes   (alternativas: @CineToonES, @CineToonOficial)
+
+DESCRIPCIÓN:
+🍿 Películas resumidas en dibujos animados.
+Te contamos las películas más intrigantes, perturbadoras y sorprendentes en pocos minutos, animadas y por partes.
+¿Llegarás hasta el final? 🎬
+Nueva parte cada semana. ¡Suscríbete y activa la campanita!
+
+PALABRAS CLAVE:
+resumen de películas, películas resumidas, resumen animado, películas en minutos, el hoyo resumen, cine, películas de terror resumen, películas de suspenso, resumen en español
+
+ARCHIVOS:
+- perfil.png  (800x800)   -> Foto de perfil
+- banner.png  (2560x1440) -> Banner (el texto está dentro de la zona segura de 1546x423)
